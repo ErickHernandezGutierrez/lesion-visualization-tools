@@ -64,18 +64,48 @@ This toolkit is designed for neuroimaging researchers working with MS patient da
 
 ## Usage
 
-
-python .\pipeline\plot-new-lesion-boxplots.py 
+Example of plot-subject-data.py to plot per-bundle longitudinal grid
+```bash
+python .\pipeline\plot-subject-data.py 
     sub-004-ms # patient tag
-    ./lesion_masks # directory with the lesion_masks
-    ./bundle_masks # directory with the bundle_masks
     --metrics fixel-fa fixel-rd mrds-isovf MTsat # target metrics
-    --results_tractometry_dir ./results_tractometry_imk # directory with tractometry_results
-    --MRDS_dir ./MRDS  # directory with MRDS results
-    --MTsat_dir ./MTsat # directory with MT metric maps (only for MTsat and MTR)
-    --DTI_dir ./DTI # directory with DTI metric maps (only required for FA, RD, AD and MD)
-    --FW_dir ./FW # directory with FW maps (only for FW)
+    --bundles IFOF_L AF_L CC_7 CST_L # target bundles
+    --hc_subject sub-003-hc # HC subject tags (optional)
+```
+
+Example of plot-subject-data.py to plot per-bundle-section longitudinal grid
+```bash
+python .\pipeline\plot-subject-data.py 
+    sub-004-ms # patient tag
+    --metrics fixel-fa fixel-rd mrds-isovf MTsat # target metrics
+    --bundle IFOF_L # target bundle
+    --bundle_sections 4 5 6 7 # bundle section labels
+    --hc_subject sub-003-hc # HC subject tags (optional)
+```
+
+Example of plot-subject-data.py to plot per-lesion longitudinal grid
+```bash
+python .\pipeline\plot-subject-data.py 
+    sub-004-ms # patient tag
+    --metrics fixel-fa fixel-rd mrds-isovf MTsat # target metrics
+    --lesions 197 36 34 218 # lesion labels
+    --hc_subject sub-003-hc # HC subject tags (optional)
+```
+
+Example of plot-new-lesion-boxplots.py to plot new-lesion longitudinal grid
+```bash
+python .\pipeline\plot-new-lesion-boxplots.py \
+    sub-004-ms \ # patient tag
+    ./lesion_masks \ # directory with the lesion_masks
+    ./bundle_masks \ # directory with the bundle_masks
+    --metrics fixel-fa fixel-rd mrds-isovf MTsat \ # target metrics
+    --results_tractometry_dir ./results_tractometry_imk \ # directory with tractometry_results
+    --MRDS_dir ./MRDS \ # directory with MRDS results
+    --MTsat_dir ./MTsat \ # directory with MT metric maps (only for MTsat and MTR)
+    --DTI_dir ./DTI \ # directory with DTI metric maps (only required for FA, RD, AD and MD)
+    --FW_dir ./FW \ # directory with FW maps (only for FW)
     --target_session 2 # target session of the new lesions
+```
 
 The scripts are designed to work with organized neuroimaging data directories containing:
 - Lesion masks and labels
