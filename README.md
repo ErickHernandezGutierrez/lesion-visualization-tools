@@ -64,7 +64,45 @@ This toolkit is designed for neuroimaging researchers working with MS patient da
 
 ## Usage
 
-Example of plot-subject-data.py to plot per-bundle longitudinal grid
+The scripts that plot longitudinal grids require a .CSV file with the data to plot. For example, the .CSV to plot per-bundle longitudinal grid for subject should have the following columns
+```bash
+subject,bundle,metric,session,lesion_mean,penumbra_mean,nawm_mean,lesion_std,penumbra_std,nawm_std,lesion_median,penumbra_median,nawm_median
+```
+See the `data/sub-004-ms_per_bundle_data.csv` file to see an example.
+
+To generate the a .CSV with the per-bundle and per-bundle-section data for a single patient, use `save-per-bundle-patient-data.py`. To generate the .CSV of the whole HC cohort to be added to as reference in the plots use the `save-per-bundle-hc-data.py`. To generate the .CSV with the per-lesion data for a single patient, use the ``save-per-lesion-patient-data.py``
+
+Example of `save-per-bundle-patient-data.py` to generate the `sub-004-ms_per_bundle_data.csv` and `sub-004-ms_per_bundle_section_data.csv` files
+```bash
+python .\pipeline\save-per-bundle-patient-data.py 
+    sub-004-ms # patient tag 
+    .lesion_masks # directory with lesion masks
+    .bundle_masks # directory with bundle masks
+    --bundles AF_L AF_R CC_1 CC_2a CC_2b CC_3 CC_4 CC_5 CC_6 CC_7 CG_L CG_R CR_L CR_R CST_L CST_R ICP_L ICP_R IFOF_L IFOF_R ILF_L ILF_R MCP OR_L OR_R SLF_1_L SLF_1_R SLF_2_L SLF_2_R SLF_3_L SLF_3_R UF_L UF_R # target bundles
+    --metrics fixel-ad fixel-rd fixel-fa fixel-md ad rd fa md MTsat MTR ihMTsat ihMTR fw mrds-isovf todi-nufo # target metrics
+    --results_tractometry_dir ./results_tractometry_imk # directory with tractometry results (only for fixel-based MRDS metrics)
+    --DTI_dir ./DTI # directory with DTI maps (only for DTI metrics)
+    --MRDS_dir ./MRDS # directory with MRDS maps (only for mrds-isovf)
+    --MTsat_dir ./MTsat # directory with MT maps (only for MTsat and MTR)
+    --FW_dir ./FW # directory with FW maps (only for FW)
+```
+
+For the HC cohort the use is similar but passing a list of subject tags instead of a single patient tag, and passing a wm_masks directory instead of a lesion_masks directory
+```bash
+python .\pipeline\save-per-bundle-hc-data.py 
+    sub-003-hc sub-004-hc sub-015-hc
+    ./wm_masks
+    ./bundle_masks
+    --bundles IFOF_L 
+    --metrics ad rd md fa fixel-ad fixel-rd fixel-md fixel-fa mrds-isovf fw MTsat 
+    --results_tractometry_dir ./results_tractometry
+    --DTI_dir ./DTI
+    --MRDS_dir ./MRDS
+    --MTsat_dir ./MTsat
+    --FW_dir ./FW
+```
+
+Example of `plot-subject-data.py` to plot per-bundle longitudinal grid
 ```bash
 python .\pipeline\plot-subject-data.py 
     sub-004-ms # patient tag
@@ -107,11 +145,25 @@ python .\pipeline\plot-new-lesion-boxplots.py \
     --target_session 2 # target session of the new lesions
 ```
 
-The scripts are designed to work with organized neuroimaging data directories containing:
-- Lesion masks and labels
-- White matter masks
-- Bundle-specific masks
-- Metric maps (DTI, MT, etc.)
+The scripts are designed to work with organized neuroimaging data directories (results_tractometry, MRDS, MTsat, DTI, and FW). These folder have to organize the data in the following example format
+
+[DTI]
+├── sub-001-ms_ses-1
+│   ├── fa.nii.gz
+│   ├── md.nii.gz
+│   ├── rd.nii.gz
+│   └── ad.nii.gz
+├── sub-001-ms_ses-2
+│   ├── fa.nii.gz
+│   ├── md.nii.gz
+│   ├── rd.nii.gz
+│   └── ad.nii.gz
+├── sub-002-ms_ses-1
+│   ├── fa.nii.gz
+│   ├── md.nii.gz
+│   ├── rd.nii.gz
+│   └── ad.nii.gz
+...
 
 Each script includes command-line arguments for specifying data directories and analysis parameters.
 
