@@ -89,7 +89,7 @@ python .\pipeline\save-per-bundle-patient-data.py
 
 For the HC cohort the use is similar but passing a list of subject tags instead of a single patient tag, and passing a wm_masks directory instead of a lesion_masks directory
 ```bash
-python .\pipeline\save-per-bundle-hc-data.py 
+python save-per-bundle-hc-data.py 
     sub-003-hc sub-004-hc sub-015-hc
     ./wm_masks
     ./bundle_masks
@@ -104,7 +104,7 @@ python .\pipeline\save-per-bundle-hc-data.py
 
 Example of `plot-subject-data.py` to plot per-bundle longitudinal grid
 ```bash
-python .\pipeline\plot-subject-data.py 
+python plot-subject-data.py 
     sub-004-ms # patient tag
     --metrics fixel-fa fixel-rd mrds-isovf MTsat # target metrics
     --bundles IFOF_L AF_L CC_7 CST_L # target bundles
@@ -113,7 +113,7 @@ python .\pipeline\plot-subject-data.py
 
 Example of plot-subject-data.py to plot per-bundle-section longitudinal grid
 ```bash
-python .\pipeline\plot-subject-data.py 
+python plot-subject-data.py 
     sub-004-ms # patient tag
     --metrics fixel-fa fixel-rd mrds-isovf MTsat # target metrics
     --bundle IFOF_L # target bundle
@@ -123,7 +123,7 @@ python .\pipeline\plot-subject-data.py
 
 Example of plot-subject-data.py to plot per-lesion longitudinal grid
 ```bash
-python .\pipeline\plot-subject-data.py 
+python plot-subject-data.py 
     sub-004-ms # patient tag
     --metrics fixel-fa fixel-rd mrds-isovf MTsat # target metrics
     --lesions 197 36 34 218 # lesion labels
@@ -132,21 +132,22 @@ python .\pipeline\plot-subject-data.py
 
 Example of plot-new-lesion-boxplots.py to plot new-lesion longitudinal grid
 ```bash
-python .\pipeline\plot-new-lesion-boxplots.py \
-    sub-004-ms \ # patient tag
-    ./lesion_masks \ # directory with the lesion_masks
-    ./bundle_masks \ # directory with the bundle_masks
-    --metrics fixel-fa fixel-rd mrds-isovf MTsat \ # target metrics
-    --results_tractometry_dir ./results_tractometry_imk \ # directory with tractometry_results
-    --MRDS_dir ./MRDS \ # directory with MRDS results
-    --MTsat_dir ./MTsat \ # directory with MT metric maps (only for MTsat and MTR)
-    --DTI_dir ./DTI \ # directory with DTI metric maps (only required for FA, RD, AD and MD)
-    --FW_dir ./FW \ # directory with FW maps (only for FW)
+python plot-new-lesion-boxplots.py
+    sub-004-ms # patient tag
+    ./lesion_masks # directory with the lesion_masks
+    ./bundle_masks # directory with the bundle_masks
+    --metrics fixel-fa fixel-rd mrds-isovf MTsat # target metrics
+    --results_tractometry_dir ./results_tractometry_imk # directory with tractometry_results
+    --MRDS_dir ./MRDS # directory with MRDS results
+    --MTsat_dir ./MTsat # directory with MT metric maps (only for MTsat and MTR)
+    --DTI_dir ./DTI # directory with DTI metric maps (only required for FA, RD, AD and MD)
+    --FW_dir ./FW # directory with FW maps (only for FW)
     --target_session 2 # target session of the new lesions
 ```
 
 The scripts are designed to work with organized neuroimaging data directories (results_tractometry, MRDS, MTsat, DTI, and FW). These folder have to organize the data in the following example format
 
+```bash
 [DTI]
 ├── sub-001-ms_ses-1
 │   ├── fa.nii.gz
@@ -164,6 +165,4 @@ The scripts are designed to work with organized neuroimaging data directories (r
 │   ├── rd.nii.gz
 │   └── ad.nii.gz
 ...
-
-Each script includes command-line arguments for specifying data directories and analysis parameters.
-
+```
