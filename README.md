@@ -102,6 +102,8 @@ python save-per-bundle-hc-data.py
     --FW_dir ./FW
 ```
 
+To plot the per-bundle longitudinal grid for a single patient use the `plot-subject-data.py`
+
 Example of `plot-subject-data.py` to plot per-bundle longitudinal grid
 ```bash
 python plot-subject-data.py 
@@ -110,6 +112,17 @@ python plot-subject-data.py
     --bundles IFOF_L AF_L CC_7 CST_L # target bundles
     --hc_subject sub-003-hc # HC subject tags (optional)
 ```
+
+To plot the per-bundle longitudinal grid for a MS cohort, use the `plot-cohort-data.py`
+```bash
+python plot-cohort-data.py 
+    --patients sub-006-ms sub-008-ms sub-010-ms sub-018-ms # patient tags list
+    --bundle IFOF_L # target bundle
+    --metrics fixel-fa fixel-rd mrds-isovf MTsat # target metrics
+    --hc_subjects sub-003-hc # HC subjects tags (optional)
+```
+
+To plot the per-bundle-section longitudinal grid for a single patient use the `plot-subject-data.py`
 
 Example of plot-subject-data.py to plot per-bundle-section longitudinal grid
 ```bash
@@ -121,6 +134,8 @@ python plot-subject-data.py
     --hc_subject sub-003-hc # HC subject tags (optional)
 ```
 
+To plot the per-lesion longitudinal grid for a single patient use the `plot-subject-data.py`
+
 Example of plot-subject-data.py to plot per-lesion longitudinal grid
 ```bash
 python plot-subject-data.py 
@@ -129,6 +144,8 @@ python plot-subject-data.py
     --lesions 197 36 34 218 # lesion labels
     --hc_subject sub-003-hc # HC subject tags (optional)
 ```
+
+To plot the new-lesion longitudinal grid for a single patient use the `plot-subject-data.py`
 
 Example of plot-new-lesion-boxplots.py to plot new-lesion longitudinal grid
 ```bash
