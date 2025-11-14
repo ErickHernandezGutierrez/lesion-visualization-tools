@@ -3,6 +3,7 @@ import nibabel as nib
 import json
 import itertools
 import os
+from pathlib import Path
 
 def rename_metric(bundle_name, metric):
     if 'ad' in metric:
