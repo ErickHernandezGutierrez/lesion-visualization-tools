@@ -20,6 +20,7 @@ This toolkit is designed for neuroimaging researchers working with MS patient da
 - `save-per-bundle-hc-data.py`: Extracts healthy control data for comparison
 
 ### Visualization
+- `plot-tract-profiles.py`: Plot tract profiles comparing a patient with a cohort as in https://doi.org/10.3389/fnins.2024.1467786.
 - `plot-new-lesion-boxplots.py`: Creates longitudinal boxplots comparing lesion, penumbra, and NAWM metrics
 - `plot-subject-data.py`: Generates individual subject longitudinal grid of plots
 - `plot-cohort-data.py`: Creates cohort-level longitudinal grid of plots
@@ -63,6 +64,38 @@ This toolkit is designed for neuroimaging researchers working with MS patient da
 - Scikit-learn
 
 ## Usage
+
+The script that plot tract profiles require `tractometry_results` directory to plot. For example, to plot a patient tract profile for a specific bundle and metric:
+```bash
+python plot-tract-profiles.py 
+    --patient sub-004-ms_ses-1 
+    --patient_tractometry_results_dir ms_6months/results_tractometry_imk
+    --metrics fixel-RD
+    --bundles IFOF_L 
+    -add_legend
+```
+
+To include a cohort for comparison:
+```bash
+python plot-tract-profiles.py 
+    --patient sub-004-ms_ses-1 
+    --patient_tractometry_results_dir ms_6months/results_tractometry_imk
+    --cohort_tractometry_results_dir myelo_inferno_imk/results_tractometry
+    --metrics fixel-RD
+    --bundles IFOF_L 
+    -add_legend
+```
+
+To plot tract profile grid for several metrics and bundles:
+```bash
+python plot-tract-profiles.py 
+    --patient sub-004-ms_ses-1 
+    --patient_tractometry_results_dir ms_6months/results_tractometry_imk
+    --cohort_tractometry_results_dir myelo_inferno_imk/results_tractometry
+    --metrics fixel-RD fixel-FA MTsat
+    --bundles IFOF_L AF_R
+    -add_legend
+```
 
 The scripts that plot longitudinal grids require a .CSV file with the data to plot. For example, the .CSV to plot per-bundle longitudinal grid for subject should have the following columns
 ```bash
