@@ -7,24 +7,24 @@ import os
 def rename_metric(bundle_name, metric):
     if 'ad' in metric:
         if bundle_name in metric:
-            return 'fixel_ad'
+            return 'fixel-AD'
         else:
-            return 'ad'
+            return 'AD'
     elif 'rd' in metric:
         if bundle_name in metric:
-            return 'fixel_rd'
+            return 'fixel-RD'
         else:
-            return 'rd'
+            return 'RD'
     elif 'md' in metric:
         if bundle_name in metric:
-            return 'fixel_md'
+            return 'fixel-MD'
         else:
-            return 'md'
+            return 'MD'
     elif 'fa' in metric:
         if bundle_name in metric:
-            return 'fixel_fa'
+            return 'fixel-FA'
         else:
-            return 'fa'
+            return 'FA'
     elif 'ihMTR' in metric:
         return 'ihMTR'
     elif 'ihMTsat' in metric:
@@ -34,17 +34,46 @@ def rename_metric(bundle_name, metric):
     elif 'MTsat' in metric:
         return 'MTsat'
     elif 'afd_total' in metric:
-        return 'afd_total'
+        return 'AFD_total'
     elif 'afd' in metric:
-        return 'afd'
+        return 'AFD'
     elif 'nufo' in metric:
-        return 'nufo'
+        return 'NuFO'
     elif 'isovf' in metric:
-        return 'isovf'
+        return 'ISOVF'
     elif 'fw' in metric:
-        return 'fw'
+        return 'FW'
     
     return metric
+
+def load_subject_stats(json_filename):
+    json_file = open(json_filename)
+    data = json.load(json_file)
+
+    stats_mean = {}
+    stats_std = {}
+
+    # Data is wrapped in a dictionary with the subject name as the key
+    # { subject: data }
+    subject = next(iter(data))
+    data = data[subject]
+
+    for bundle in data:
+        for metric in data[bundle]:
+            if (bundle in metric) or (not 'bundle' in metric): #bundle
+                means = []
+                stds  = []
+
+                for point in data[bundle][metric]:
+                    means.append( data[bundle][metric][point]['mean'] )
+                    stds.append( data[bundle][metric][point]['std'] )
+
+                metric = rename_metric(bundle, metric)
+
+                stats_mean[(bundle,metric)] = np.array(means)
+                stats_std[(bundle,metric)] = np.array(stds)
+
+    return stats_mean, stats_std
 
 def load_metric(subject, session, bundle, metric, metrics_dirs):
     """
@@ -256,3 +285,44 @@ def subtract_labeled_masks(mask1, mask2):
         result[common_region] = np.maximum(0, mask2[common_region] - mask1[common_region])
     
     return result
+
+def find_lesion_bundles_intersections(subject, bundle_masks_dir, lesion_mask):
+    """
+    Find which bundles intersect with each lesion in the lesion mask.
+    
+    Args:
+        subject: Subject ID with session number
+        bundle_masks_dir: Directory containing bundle mask files (.nii.gz)
+        lesion_mask_path: Path to the labeled lesion mask file (.nii.gz)
+    
+    Returns:
+        dict: Mapping of lesion labels to lists of intersecting bundle names
+    """
+    
+    # Get unique lesion labels (excluding background/0)
+    lesion_labels = np.unique(lesion_mask)
+    lesion_labels = lesion_labels[lesion_labels != 0]
+    
+    # Initialize results dictionary
+    intersections = {int(label): [] for label in lesion_labels}
+    
+    # Load and process each bundle mask
+    for bundle_file in Path(bundle_masks_dir).glob(f'{subject}__*.nii.gz'):
+        bundle_name = bundle_file.stem.replace('.nii', '') # remove .nii extension
+        bundle_name = bundle_name.replace(f'{subject}__', '') # remove subject prefix
+        bundle_img = nib.load(bundle_file)
+        bundle_data = bundle_img.get_fdata()
+        
+        # Convert bundle mask to binary
+        bundle_data = bundle_data > 0
+        
+        # Check intersection with each lesion
+        for label in lesion_labels:
+            # Create binary mask for current lesion
+            lesion_data = lesion_mask == label
+            
+            # Check if there's any overlap
+            if np.any(bundle_data & lesion_data):
+                intersections[int(label)].append(bundle_name)
+    
+    return intersections
