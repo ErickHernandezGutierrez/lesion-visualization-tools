@@ -2,9 +2,37 @@ import numpy as np
 import argparse
 import os
 import matplotlib.pyplot as plt
-from utils import load_group_stats, load_subject_stats
+from utils import load_group_stats, load_subject_stats, get_ax
 
-def plot_tract_profiles(ax, means, stds, xlabel='', ylabel='', color='black', add_first_variance=False, add_second_variance=False, is_cohort=False, zorder=1, label=None):
+def plot_tract_profiles(
+    ax, 
+    means, 
+    stds, 
+    xlabel='', 
+    ylabel='', 
+    color='black', 
+    add_first_variance=False, 
+    add_second_variance=False, 
+    is_cohort=False, 
+    zorder=1, 
+    label=None,
+    add_grid=False
+):
+    """
+    Plot tract profiles.
+    Args:
+        ax: The axis object
+        means: The means of the tract profiles
+        stds: The standard deviations of the tract profiles
+        xlabel: The label of the x-axis (default: '')
+        ylabel: The label of the y-axis (default: '')
+        color: The color of the plot (default: 'black')
+        add_first_variance: Add the first variance to the plot (default: False)
+        add_second_variance: Add the second variance to the plot (default: False)
+        is_cohort: Plot is for a cohort (default: False)
+        zorder: Zorder of the plot (default: 1)
+        label: Label of the plot (default: None)
+    """
     if is_cohort:
         mean = np.average(means, axis=1)
         std = np.std(means, axis=1)
@@ -34,6 +62,9 @@ def plot_tract_profiles(ax, means, stds, xlabel='', ylabel='', color='black', ad
     if add_second_variance:
         ax.fill_between(dim, mean-2*std, mean+2*std, facecolor=color, alpha=0.3, zorder=zorder)
 
+    # Add grid
+    ax.grid(True, linestyle='--', alpha=0.7)
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Plot tract profiles')
     parser.add_argument('--patient', help='Subject ID')
@@ -44,6 +75,7 @@ if __name__ == "__main__":
     parser.add_argument('-add_first_variance', action='store_true', help='Add first variance to the plot')
     parser.add_argument('-add_second_variance', action='store_true', help='Add second variance to the plot')
     parser.add_argument('-add_legend', action='store_true', help='Add legend to the plot')
+    parser.add_argument('-add_grid', action='store_true', help='Add grid to the plot')
     parser.add_argument('--patient_label', default='Patient', help='Patient label in the legend')
     parser.add_argument('--cohort_label', default='Cohort', help='Cohort label in the legend')
     parser.add_argument('--patient_color', default='#D62728', help='Patient color')
@@ -71,15 +103,9 @@ if __name__ == "__main__":
     fig, axes = plt.subplots(nrows=n_bundles, ncols=n_metrics, figsize=args.figsize)
     for i, bundle in enumerate(args.bundles):
         for j, metric in enumerate(args.metrics):
-            if n_bundles == 1 and n_metrics == 1:
-                ax = axes
-            elif n_bundles > 1 and n_metrics > 1:
-                ax = axes[i][j]
-            elif n_metrics > 1:
-                ax = axes[j]
-            else:
-                ax = axes[i]
+            ax = get_ax(axes, i, j, n_bundles, n_metrics)
 
+            # Plot patient tract profiles
             plot_tract_profiles(
                 ax, 
                 patient_stats_mean[(bundle, metric)],
@@ -89,7 +115,10 @@ if __name__ == "__main__":
                 color=args.patient_color,
                 label=f'{args.patient_label} {args.patient}',
                 zorder=2 # Patient plot on top of cohort plot
+                add_grid=args.add_grid
             )
+
+            # Plot cohort tract profiles
             plot_tract_profiles(
                 ax, 
                 cohort_stats_mean[(bundle, metric)],
@@ -100,7 +129,8 @@ if __name__ == "__main__":
                 label=f'{args.cohort_label}',
                 add_first_variance=args.add_first_variance,
                 add_second_variance=args.add_second_variance,
-                is_cohort=True
+                is_cohort=True,
+                add_grid=args.add_grid
             )
 
             ax.set_title(f'Bundle: {bundle}')

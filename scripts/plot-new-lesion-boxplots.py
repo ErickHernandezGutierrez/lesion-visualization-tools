@@ -4,7 +4,7 @@ import nibabel as nib
 import matplotlib.pyplot as plt
 import pandas as pd
 import argparse
-from find_lesion_bundle_intersections import find_lesion_bundles_intersections
+from utils import find_lesion_bundles_intersections
 from utils import load_metric
 import pickle
 from matplotlib.ticker import FormatStrFormatter

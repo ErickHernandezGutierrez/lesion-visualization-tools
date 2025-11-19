@@ -5,6 +5,28 @@ import itertools
 import os
 from pathlib import Path
 
+def get_ax(axes, i, j, n_rows, n_cols):
+    """
+    Get the axis object for the given indices.
+    Args:
+        axes: The axes object
+        i: The row index
+        j: The column index
+        n_rows: The number of rows
+        n_cols: The number of columns
+
+    Returns:
+        The axis object
+    """
+    if n_rows == 1 and n_cols == 1:
+        return axes
+    elif n_rows > 1 and n_cols > 1:
+        return axes[i][j]
+    elif n_cols > 1:
+        return axes[j]
+    else:
+        return axes[i]
+
 def rename_metric(bundle_name, metric):
     if 'ad' in metric:
         if bundle_name in metric:
