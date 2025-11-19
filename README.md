@@ -55,15 +55,11 @@ This toolkit is designed for neuroimaging researchers working with MS patient da
 
 ## Requirements
 
-- Python 3.7+
-- NumPy
-- NiBabel
-- Matplotlib
-- Pandas
-- SciPy
-- Scikit-learn
+- Python 3.10.x
 
 ## Usage
+
+### Tract Profiles
 
 The script that plot tract profiles require `tractometry_results` directory to plot. For example, to plot a patient tract profile for a specific bundle and metric:
 ```bash
@@ -96,6 +92,8 @@ python plot-tract-profiles.py
     --bundles IFOF_L AF_R
     -add_legend
 ```
+
+### CSV File generation
 
 The scripts that plot longitudinal grids require a .CSV file with the data to plot. For example, the .CSV to plot per-bundle longitudinal grid for subject should have the following columns
 ```bash
@@ -135,24 +133,30 @@ python save-per-bundle-hc-data.py
     --FW_dir ./FW
 ```
 
+### Longitudinal Visualization
+
 To plot the per-bundle longitudinal grid for a single patient use the `plot-subject-data.py`
 
 Example of `plot-subject-data.py` to plot per-bundle longitudinal grid
 ```bash
 python plot-subject-data.py 
-    sub-004-ms # patient tag
+    --patient sub-004-ms # patient tag
+    --patient_csv_dir ms_6months/results_csv # directory with patients CSV files
     --metrics fixel-fa fixel-rd mrds-isovf MTsat # target metrics
     --bundles IFOF_L AF_L CC_7 CST_L # target bundles
     --hc_subject sub-003-hc # HC subject tags (optional)
+    --hc_csv_dir myelo_inferno/results_csv # directory with HC subjects CSV files
 ```
 
 To plot the per-bundle longitudinal grid for a MS cohort, use the `plot-cohort-data.py`
 ```bash
 python plot-cohort-data.py 
     --patients sub-006-ms sub-008-ms sub-010-ms sub-018-ms # patient tags list
+    --patient_csv_dir ms_6months/results_csv # directory with patients CSV files
     --bundle IFOF_L # target bundle
     --metrics fixel-fa fixel-rd mrds-isovf MTsat # target metrics
     --hc_subjects sub-003-hc # HC subjects tags (optional)
+    --hc_csv_dir myelo_inferno/results_csv # directory with HC subjects CSV files
 ```
 
 To plot the per-bundle-section longitudinal grid for a single patient use the `plot-subject-data.py`
@@ -160,11 +164,13 @@ To plot the per-bundle-section longitudinal grid for a single patient use the `p
 Example of plot-subject-data.py to plot per-bundle-section longitudinal grid
 ```bash
 python plot-subject-data.py 
-    sub-004-ms # patient tag
+    --patient sub-004-ms # patient tag
+    --patient_csv_dir ms_6months/results_csv # directory with patients CSV files
     --metrics fixel-fa fixel-rd mrds-isovf MTsat # target metrics
     --bundle IFOF_L # target bundle
     --bundle_sections 4 5 6 7 # bundle section labels
     --hc_subject sub-003-hc # HC subject tags (optional)
+    --hc_csv_dir myelo_inferno/results_csv # directory with HC subjects CSV files
 ```
 
 To plot the per-lesion longitudinal grid for a single patient use the `plot-subject-data.py`
@@ -172,10 +178,12 @@ To plot the per-lesion longitudinal grid for a single patient use the `plot-subj
 Example of plot-subject-data.py to plot per-lesion longitudinal grid
 ```bash
 python plot-subject-data.py 
-    sub-004-ms # patient tag
+    --patient sub-004-ms # patient tag
+    --patient_csv_dir ms_6months/results_csv # directory with patients CSV files
     --metrics fixel-fa fixel-rd mrds-isovf MTsat # target metrics
     --lesions 197 36 34 218 # lesion labels
     --hc_subject sub-003-hc # HC subject tags (optional)
+    --hc_csv_dir myelo_inferno/results_csv # directory with HC subjects CSV files
 ```
 
 To plot the new-lesion longitudinal grid for a single patient use the `plot-subject-data.py`

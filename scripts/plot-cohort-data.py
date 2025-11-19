@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import argparse
 import os
 from matplotlib.ticker import FormatStrFormatter
+from utils import get_ax
 
 patient_tags = {
     'sub-006-ms': 'Patient-A',
@@ -30,29 +31,72 @@ ylims = {
     'mrds-isovf': [0.1,0.4],
 }
 
+def rename_metric(metric):
+    if metric in ['fixel-ad', 'fixel-rd', 'fixel-fa', 'fixel-md']:
+        return 'fixel-'+metric.replace('fixel-', '').upper()
+    elif metric in ['ad', 'rd', 'fa', 'md']:
+        return metric.upper()
+    elif metric in ['MTsat', 'MTR', 'ihMTsat', 'ihMTR']:
+        return metric
+    elif metric == 'fw':
+        return 'FW'
+    elif metric == 'mrds-isovf':
+        return 'MRDS-ISOVF'
+    elif metric == 'todi-nufo':
+        return 'TODI-NuFO'
+    elif metric == 'afd_total':
+        return 'AFD_total'
+    elif metric == 'afd':
+        return 'AFD'
+    elif metric == 'nufo':
+        return 'NuFO'
+    elif metric == 'isovf':
+        return 'ISOVF'
+    return metric
+
 def create_cohort_plots(
     patients,
+    patient_csv_dir,
     bundle,
     metrics,
     n_sessions=5,
     add_std=False,
-    hc_subjects=[]
+    add_grid=False,
+    add_legend=False,
+    hc_subjects=[],
+    hc_csv_dir=None,
+    color_lesion='#d62728',
+    color_penumbra='#ff7f0e',
+    color_nawm='#1f77b4',
+    color_hc='#2ca02c',
+    font_size=24,
+    linewidth=1
 ):
     """
     Create grid of plots for a cohort of patients
     
     patients: list of patient IDs. e.g. ["sub-004-ms", "sub-005-ms"]
+    patient_csv_dir: Path to patient CSV directory
     bundle: name of the bundle to filter data.
     metrics: list of metrics to plot.
     n_sessions: number of sessions to plot.
     add_std: add standard deviation to the plot.
+    add_grid: add grid to the plot.
+    add_legend: add legend to the plot.
     hc_subjects: HC subjects
+    hc_csv_dir: Path to HC CSV directory
+    color_lesion: Color for lesion region.
+    color_penumbra: Color for penumbra region.
+    color_nawm: Color for NAWM region.
+    color_hc: Color for HC region.
+    font_size: Font size for labels and titles.
+    linewidth: Line width for plots.
     """
 
     # Read the dataframes from the input CSV files
     patient_dfs = {}
     for patient in patients:
-        file_path = f'D:\\SCIL\\ms_6months\\{patient}_per_bundle_data.csv'
+        file_path = os.path.join(patient_csv_dir, f'{patient}_per_bundle_data.csv')
         if os.path.exists(file_path):
             df = pd.read_csv(file_path)
             patient_dfs[patient] = df
@@ -63,10 +107,10 @@ def create_cohort_plots(
         raise ValueError("No valid patient data found")
     
     # Load HC data if provided
-    if hc_subjects:
+    if hc_subjects and hc_csv_dir:
         hc_dfs = []
         for subject in hc_subjects:
-            hc_file_path = f'D:\\SCIL\\myelo_inferno_imk\\{subject}_per_bundle_data.csv'
+            hc_file_path = os.path.join(hc_csv_dir, f'{subject}_per_bundle_data.csv')
             if os.path.exists(hc_file_path):
                 hc_df = pd.read_csv(hc_file_path)
                 hc_dfs.append(hc_df)
@@ -94,8 +138,7 @@ def create_cohort_plots(
     
     # Set font size
     import matplotlib
-    font_size = 24  # Reduced font size for better fit in grid
-    font = {'size': font_size}
+    font = {'size' : font_size}
     matplotlib.rc('font', **font)
     plt.rcParams["font.family"] = "Times New Roman"
     
@@ -106,9 +149,9 @@ def create_cohort_plots(
     
     # Colors for different regions
     colors = {
-        'lesion': '#d62728',
-        'penumbra': '#ff7f0e',
-        'nawm': '#1f77b4'
+        'lesion': color_lesion,
+        'penumbra': color_penumbra,
+        'nawm': color_nawm,
     }
     
     # Plot for each patient and metric
@@ -118,7 +161,7 @@ def create_cohort_plots(
             continue
             
         for j, metric in enumerate(metrics):
-            ax = axes[i][j]
+            ax = get_ax(axes, i, j, n_rows, n_cols)
             
             # Filter data for current bundle and metric
             mask = (df['bundle'] == bundle) & (df['metric'] == metric)
@@ -146,8 +189,6 @@ def create_cohort_plots(
                     if metric in ['rd', 'fixel-rd']:
                         y_err = y_err * 1e3
                 
-                print(f'Patient {patient}, {region} {metric}: {y_values}')
-                
                 ax.errorbar(
                     region_values.index,
                     y_values,
@@ -157,7 +198,7 @@ def create_cohort_plots(
                     label=region,
                     capsize=3,
                     capthick=1, 
-                    elinewidth=1
+                    linewidth=linewidth
                 )
 
             # Plot healthy controls if available
@@ -170,8 +211,9 @@ def create_cohort_plots(
                     hc_means[metric].index,
                     hc_values,
                     'o--',
-                    color='#2ca02c',
-                    label='HC mean'
+                    color=color_hc,
+                    label='HC mean',
+                    linewidth=linewidth
                 )
             
             # Format y-axis ticks to show 2 decimal places
@@ -179,29 +221,35 @@ def create_cohort_plots(
             
             # Set labels and title
             if i == n_rows-1:  # Only bottom row
-                ax.set_xlabel('session', fontsize=16)
-            ax.set_xticks(np.arange(1, n_sessions+1))
-            
+                ax.set_xlabel('session', fontsize=font_size)
+                ax.set_xticks(np.arange(1, n_sessions+1))
             if j == 0:  # Only leftmost column
-                ax.set_ylabel(f'{patient_tags[patient]}', fontsize=20)
-            
+                ax.set_ylabel(f'{patient}', fontsize=font_size)
             if i == 0:  # Only top row
-                ax.set_title(metric)
+                ax.set_title(rename_metric(metric))
 
             # Add grid
-            ax.grid(True, linestyle='--', alpha=0.7)
+            if add_grid:
+                ax.grid(True, linestyle='--', alpha=0.7)
     
     # Add overall title
     fig.suptitle(f'Patient-Based Longitudinal Grid (Tool 1) | Bundle: {bundle}')
 
-    # Add legend - only once for the entire figure
-    handles = [
-        plt.Rectangle((0,0),1,1, color='#2ca02c', label='HC mean'),
-        plt.Rectangle((0,0),1,1, color='#1f77b4', label='NAWM'),
-        plt.Rectangle((0,0),1,1, color='#ff7f0e', label='Penumbra'),
-        plt.Rectangle((0,0),1,1, color='#d62728', label='Lesion')
-    ]
-    fig.legend(handles=handles, loc='lower center', ncol=4, bbox_to_anchor=(0.5, -0.01), fontsize=12)
+    # Add legend
+    if add_legend:
+        handles = [
+            plt.Rectangle((0,0),1,1, color=color_hc, label='HC mean'),
+            plt.Rectangle((0,0),1,1, color=color_nawm, label='NAWM'),
+            plt.Rectangle((0,0),1,1, color=color_penumbra, label='Penumbra'),
+            plt.Rectangle((0,0),1,1, color=color_lesion, label='Lesion')
+        ]
+        fig.legend(
+            handles=handles, 
+            loc='lower center', 
+            ncol=4, 
+            bbox_to_anchor=(0.5, -0.01), 
+            fontsize=font_size-4
+        )
     
     # Adjust layout
     plt.tight_layout(rect=[0, 0.05, 1, 0.95])
@@ -212,11 +260,21 @@ def create_cohort_plots(
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Create cohort plots for given patients, bundle and metrics')
     parser.add_argument('--patients', nargs='+', type=str, required=True, help='List of patient IDs. e.g. "sub-004-ms sub-005-ms"')
+    parser.add_argument('--patient_csv_dir', required=True, help='Path to patient CSV directory')
     parser.add_argument('--bundle', type=str, required=True, help='Bundle name to plot')
     parser.add_argument('--metrics', nargs='+', type=str, required=True, help='List of metrics')
     parser.add_argument('--hc_subjects', nargs='+', type=str, required=False, help='HC subjects')
+    parser.add_argument('--hc_csv_dir', help='Path to HC CSV directory')
     parser.add_argument('--n_sessions', type=int, default=5, help='Number of sessions')
+    parser.add_argument('--color_lesion', default='#d62728', help='Color for lesion region')
+    parser.add_argument('--color_penumbra', default='#ff7f0e', help='Color for penumbra region')
+    parser.add_argument('--color_nawm', default='#1f77b4', help='Color for NAWM region')
+    parser.add_argument('--color_hc', default='#2ca02c', help='Color for HC region')
+    parser.add_argument('--linewidth', type=int, default=1, help='Line width')
+    parser.add_argument('--font_size', type=int, default=16, help='Font size')
     parser.add_argument('-add_std', action='store_true', help='Add standard deviation to the plot')
+    parser.add_argument('-add_grid', action='store_true', help='Add grid to the plot')
+    parser.add_argument('-add_legend', action='store_true', help='Add legend to the plot')
     parser.add_argument('-save_fig', action='store_true', help='Save figure')
     parser.add_argument('--output', type=str, help='Output filename (without extension)')
     args = parser.parse_args()
@@ -224,11 +282,21 @@ if __name__ == "__main__":
     # Create the plot   
     fig = create_cohort_plots(
         args.patients,
+        args.patient_csv_dir,
         args.bundle,
         args.metrics,
         args.n_sessions,
         args.add_std,
-        args.hc_subjects
+        args.add_grid,
+        args.add_legend,
+        args.hc_subjects,
+        args.hc_csv_dir,
+        args.color_lesion,
+        args.color_penumbra,
+        args.color_nawm,
+        args.color_hc,
+        args.font_size,
+        args.linewidth
     )
 
     # Save figure
