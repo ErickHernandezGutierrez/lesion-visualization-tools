@@ -53,17 +53,18 @@ def plot_tract_profiles(
     # Set axis ticks
     ax.set_xticks(dim)
 
+    # Add grid
+    if add_grid:
+        ax.grid(True, linestyle='--', alpha=0.7, zorder=1)
+
     # Plot tract profiles
-    ax.plot(dim, mean, linewidth=5, color=color, label=label, zorder=zorder)
+    ax.plot(dim, mean, linewidth=5, color=color, label=label, zorder=4 if is_cohort else 40)
 
     # Add tract profile variances
     if add_first_variance:
-        ax.fill_between(dim, mean-std, mean+std, facecolor=color, alpha=0.5, zorder=zorder)
+        ax.fill_between(dim, mean-std, mean+std, facecolor=color, alpha=0.5, zorder=3 if is_cohort else 30)
     if add_second_variance:
-        ax.fill_between(dim, mean-2*std, mean+2*std, facecolor=color, alpha=0.3, zorder=zorder)
-
-    # Add grid
-    ax.grid(True, linestyle='--', alpha=0.7)
+        ax.fill_between(dim, mean-2*std, mean+2*std, facecolor=color, alpha=0.3, zorder=2 if is_cohort else 20)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Plot tract profiles')
@@ -114,7 +115,7 @@ if __name__ == "__main__":
                 ylabel=metric,
                 color=args.patient_color,
                 label=f'{args.patient_label} {args.patient}',
-                zorder=2 # Patient plot on top of cohort plot
+                zorder=3, # Patient plot on top of cohort plot
                 add_grid=args.add_grid
             )
 
