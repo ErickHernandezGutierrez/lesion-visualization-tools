@@ -99,7 +99,7 @@ def save_data(metrics_dirs, wm_masks_dir, bundle_masks_dir, subject, bundles, me
 
         # Load masks
         wm_mask = nib.load(os.path.join(
-            wm_masks_dir, 
+            wm_masks_dir,
             f'{subject}_ses-{session}',
             'safe_wm_mask.nii.gz'
         )).get_fdata().astype(np.uint8)
@@ -109,7 +109,7 @@ def save_data(metrics_dirs, wm_masks_dir, bundle_masks_dir, subject, bundles, me
 
             # Load bundle mask
             bundle_mask_filename = os.path.join(
-                bundle_masks_dir, 
+                bundle_masks_dir,
                 f'{subject}_ses-{session}',
                 f'{bundle}.nii.gz'
             )
@@ -121,8 +121,8 @@ def save_data(metrics_dirs, wm_masks_dir, bundle_masks_dir, subject, bundles, me
             # Load bundle section labels
             section_labels = nib.load(os.path.join(
                 metrics_dirs['results_tractometry'],
-                f'{subject}_ses-{session}', 
-                f'Bundle_Label_And_Distance_Maps', 
+                f'{subject}_ses-{session}',
+                f'Bundle_Label_And_Distance_Maps',
                 f'{subject}_ses-{session}__{bundle}_labels.nii.gz')).get_fdata()
 
             for metric in metrics:
@@ -132,9 +132,9 @@ def save_data(metrics_dirs, wm_masks_dir, bundle_masks_dir, subject, bundles, me
                     wm_mask,
                     bundle_mask,
                     section_labels,
-                    subject, 
-                    session, 
-                    bundle, 
+                    subject,
+                    session,
+                    bundle,
                     metric,
                     n_labels
                 )
@@ -177,20 +177,13 @@ def save_data(metrics_dirs, wm_masks_dir, bundle_masks_dir, subject, bundles, me
                     'median': all_median
                 })
 
-    # Create DataFrame and save to CSV
-    df = pd.DataFrame(data_rows)
-    df.to_csv(f'{subject}_per_bundle_section_data.csv', index=False)
-    print(f"Data saved to {subject}_per_bundle_section_data.csv")
-
-    df_all = pd.DataFrame(all_data_rows)
-    df_all.to_csv(f'{subject}_per_bundle_data.csv', index=False)
-    print(f"Data saved to {subject}_per_bundle_data.csv")
+    return pd.DataFrame(data_rows), pd.DataFrame(all_data_rows)
 
 def main():
     parser = argparse.ArgumentParser(description='Save patient per bundle and per bundle-section data into a CSV file.')
-    parser.add_argument('subject', help='Subject ID.')
-    parser.add_argument('wm_masks_dir', help='Path to white matter masks directory. Safe white matter mask is recommended.')
-    parser.add_argument('bundle_masks_dir', help='Path to bundle masks directory.')
+    parser.add_argument('--subjects', nargs='+', required=True, help='One or more subject IDs.')
+    parser.add_argument('--wm_masks_dir', required=True, help='Path to white matter masks directory. Safe white matter mask is recommended.')
+    parser.add_argument('--bundle_masks_dir', required=True, help='Path to bundle masks directory.')
     parser.add_argument('--bundles', nargs='+', required=True, help='List of bundle names.')
     parser.add_argument('--metrics', nargs='+', required=True, help='List of metric names.')
     parser.add_argument('--results_tractometry_dir', help='Path to directory with the results_tractometry directory.')
@@ -201,7 +194,7 @@ def main():
     parser.add_argument('--n_sessions', type=int, default=5, help='Number of sessions. Default is 5.')
     parser.add_argument('--n_labels', type=int, default=20, help='Number of section labels per bundle. Default is 20.')
     args = parser.parse_args()
-    
+
     metrics_dirs = {
         'results_tractometry': args.results_tractometry_dir,
         'DTI': args.DTI_dir,
@@ -210,27 +203,32 @@ def main():
         'FW': args.FW_dir
     }
 
-    save_data_for_safe_white_matter(
-        metrics_dirs,
-        args.wm_masks_dir,
-        args.subject,
-        args.metrics,
-        args.n_sessions
-    )
+    section_dfs = []
+    bundle_dfs = []
 
-    # Call save_data with the provided arguments
-    """
-    save_data(
-        metrics_dirs,
-        args.wm_masks_dir,
-        args.bundle_masks_dir,
-        args.subject,
-        args.bundles,
-        args.metrics,
-        args.n_sessions,
-        args.n_labels
-    )
-    """
+    for subject in args.subjects:
+        print(f'Processing subject: {subject}')
+        df_section, df_bundle = save_data(
+            metrics_dirs,
+            args.wm_masks_dir,
+            args.bundle_masks_dir,
+            subject,
+            args.bundles,
+            args.metrics,
+            args.n_sessions,
+            args.n_labels
+        )
+        section_dfs.append(df_section)
+        bundle_dfs.append(df_bundle)
+
+    df_section_all = pd.concat(section_dfs, ignore_index=True)
+    df_section_all.to_csv('per_bundle_section_hc_data.csv', index=False)
+    print("Data saved to per_bundle_section_hc_data.csv")
+
+    df_bundle_all = pd.concat(bundle_dfs, ignore_index=True)
+    df_bundle_all.to_csv('per_bundle_hc_data.csv', index=False)
+    print("Data saved to per_bundle_hc_data.csv")
+
 
 if __name__ == '__main__':
     main()
