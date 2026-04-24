@@ -121,9 +121,9 @@ python .\pipeline\save-per-bundle-patient-data.py
 For the HC cohort the use is similar but passing a list of subject tags instead of a single patient tag, and passing a wm_masks directory instead of a lesion_masks directory
 ```bash
 python save-per-bundle-hc-data.py 
-    sub-003-hc sub-004-hc sub-015-hc
-    ./wm_masks
-    ./bundle_masks
+    --subjects sub-003-hc sub-004-hc sub-015-hc
+    --wm_masks_dir ./wm_masks
+    --bundle_masks_dir ./bundle_masks
     --bundles IFOF_L 
     --metrics ad rd md fa fixel-ad fixel-rd fixel-md fixel-fa mrds-isovf fw MTsat 
     --results_tractometry_dir ./results_tractometry
